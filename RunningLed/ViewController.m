@@ -23,6 +23,9 @@
     //Timer là bộ đếm thời gian, sau một chu kỳ lại gọi một hàm định sẵn.
     NSTimer* _timer; // _indicate instant variable
     int lastOnLED; // store last turn on LED
+    NSTimer* _timer1;
+    int k;
+
 }
 
 - (void)viewDidLoad {
@@ -30,46 +33,91 @@
     _marginWidth = 40.0;
     _marginHeight = 80.0;
     _ballDiameter = 24.0;
-    _numberOfBallWidth = 11;
-    _numberOfBallHeight = 16;
+    _numberOfBallWidth = 12;
+    _numberOfBallHeight = 15;
     lastOnLED = -1;
+    k = 0;
     
     [self checkSizeOfApp];
     [self numberOfBallSpace];
     [self drawMatrixOfBalls:_numberOfBallWidth and:_numberOfBallHeight];
-    _timer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(runningLED) userInfo:nil repeats:true];
+    _timer = [NSTimer scheduledTimerWithTimeInterval:0.1
+                                              target:self
+                                            selector:@selector(runningLED)
+                                            userInfo:nil
+                                             repeats:true];
 }
 - (void) runningLED{
     if (lastOnLED != -1) {
         [self turnOFFLed:lastOnLED];// nếu mà lastOnLED khác -1 thì có nghĩa là vẫn có đèn được bật và ta tắt đèn đó đi.
     }
     // LED chạy từ trái qua phải.
-    /*if (lastOnLED != _numberOfBallWidth - 1) {
-        lastOnLED++; // nếu mà lastOnLED khác vị trí đèn cuối cùng thì lastOnLED++
-    }else{ // Reach the last LED in row, move to first LED
-        lastOnLED = 0;
-    }*/
+    //if (lastOnLED != _numberOfBallHeight * _numberOfBallWidth - 1) {
+        //lastOnLED++; // nếu mà lastOnLED khác vị trí đèn cuối cùng thì lastOnLED++
+    //}else{ // Reach the last LED in row, move to first LED
+        //lastOnLED = 0;
+    //}
     // LED chạy từ phải qua trái.
-    if ((lastOnLED == _numberOfBallWidth - 1) || (lastOnLED > 0)){
+    /*if ((lastOnLED == _numberOfBallWidth * _numberOfBallHeight - 1) || (lastOnLED > 0)){
         lastOnLED--;
     }else{
-        lastOnLED = _numberOfBallWidth - 1;
+        lastOnLED = _numberOfBallWidth * _numberOfBallHeight - 1;
+    }*/
+    // +++++++ Running Maxtrix LED type zigzag +++++++++
+    if (lastOnLED == _numberOfBallWidth*_numberOfBallHeight - 1){
+        lastOnLED = 0;
+        k = 0;
+    }else if(lastOnLED != (k+1)* _numberOfBallWidth - 1 && k % 2 == 0){
+        lastOnLED++;
+            }else if(lastOnLED != k*_numberOfBallWidth && k % 2 != 0){
+                lastOnLED--;
+            }else if((lastOnLED == (k+1) * _numberOfBallWidth - 1 && k % 2 == 0) || (lastOnLED == k * _numberOfBallWidth && k % 2 != 0)){
+                lastOnLED = lastOnLED + _numberOfBallWidth;
+                k++;
+            }
+    [self turnONLed:lastOnLED];
+    
+}
+
+- (void) runningLED1{
+    
+}
+- (void) jumpLED{
+    
+}
+
+- (void) jumpMatrixLED{
+    if (lastOnLED !=-1) {
+        [self turnOFFLed:lastOnLED];
     }
+        if (lastOnLED == _numberOfBallWidth - 1 || lastOnLED != _numberOfBallWidth){
+            lastOnLED--;
+        }else{
+            lastOnLED = lastOnLED + _numberOfBallWidth;
+        }
     [self turnONLed:lastOnLED];
 }
 - (void) turnONLed: (int) index{
-    UIView* view = [self.view viewWithTag:index + 1000];
+    //for (int i = 0; i < _numberOfBallWidth; i++) {
+        //for (int j = 0; j < _numberOfBallHeight; j++) {
+            UIView* view = [self.view viewWithTag:index + 100];
     // kiểm tra view
-    if (view && [view isMemberOfClass:[UIImageView class]]) { // trả về kiểu class của UIImageView.
-        UIImageView* ball = (UIImageView*) view; // ép kiểu
-        ball.image = [UIImage imageNamed:@"green"];
+            if (view && [view isMemberOfClass:[UIImageView class]]) { // trả về kiểu class của UIImageView.
+                UIImageView* ball = (UIImageView*) view; // ép kiểu
+                ball.image = [UIImage imageNamed:@"green"];
+            //}
+       // }
     }
 }
 - (void) turnOFFLed: (int) index{
-    UIView* view = [self.view viewWithTag:index + 1000];
-    if (view && [view isMemberOfClass:[UIImageView class]]) {
-        UIImageView* ball = (UIImageView*) view;
-        ball.image = [UIImage imageNamed:@"gray"];
+    //for (int i = 0; i < _numberOfBallWidth; i++) {
+        //for (int j = 0; j < _numberOfBallHeight; j++) {
+            UIView* view = [self.view viewWithTag:index + 100];
+            if (view && [view isMemberOfClass:[UIImageView class]]) {
+                UIImageView* ball = (UIImageView*) view;
+                ball.image = [UIImage imageNamed:@"gray"];
+            //}
+        //}
     }
 }
 
@@ -110,14 +158,13 @@
 }
 - (void) drawMatrixOfBalls: (int) numberBallWidth and: (int)numberBallHeight{
     CGFloat space = [self spaceBetweenBallCenterWhenNumberBallIsKnown:numberBallWidth];
-    //CGFloat space1 = [self spaceBetweenBallCenterHeight:numberBallHeight];
+    CGFloat space1 = [self spaceBetweenBallCenterHeight:numberBallHeight];
     for (int i = 0; i < numberBallWidth; i++) {
-        //for (int j = 0; j < numberBallHeight; j++) {
-        //for (int j = 0; j < numberBallHeight; j++) {
+        for (int j = 0; j < numberBallHeight; j++) {
         [self placeGrayBallAtX:_marginWidth + i * space
-                          andY: 140
-                       withTag:i + 1000];
-        //}
+                          andY: _marginHeight + j * space1
+                       withTag:j * numberBallWidth + i + 100];
+        }
     }
 }
 - (void)didReceiveMemoryWarning {
